@@ -100,8 +100,10 @@ Le fichier `render.yaml` prépare un service web Docker, PostgreSQL et Render
 Key Value. Dans Render, choisissez **New > Blueprint**, connectez le dépôt
 `OUOBAABDOU/SimuIA` et sélectionnez `main`.
 
-Le Blueprint demande les variables `sync: false`. Renseignez au minimum les
-secrets JWT, Gemini, chiffrement et les URLs CORS/stockage. Le Blueprint utilise
+  Le Blueprint demande les variables `sync: false`. Renseignez au minimum les
+secrets JWT, Gemini, chiffrement et les URLs CORS/application. Le mode gratuit
+active `MEDIA_ENABLED=false`, donc les variables LiveKit et S3 ne sont pas
+nécessaires pour cette démonstration texte. Le Blueprint utilise
 `BACKGROUND_JOBS_ENABLED=false` : l'évaluation Gemini texte est exécutée dans
 la requête de fin d'entretien, car les workers Celery gratuits ne sont pas
 disponibles. N'utilisez pas le parcours LiveKit/audio dans cette démonstration

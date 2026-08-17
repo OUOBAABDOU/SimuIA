@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     whisper_device: str = "cpu"
     whisper_compute_type: str = "int8"
     media_max_recording_bytes: int = 2_000_000_000
+    media_enabled: bool = True
     jwt_secret_key: str = "CHANGE_ME_IN_PRODUCTION"
     jwt_algorithm: str = "HS256"
     access_token_ttl_seconds: int = 900
@@ -73,19 +74,20 @@ class Settings(BaseSettings):
                 "iarh-livekit-dev-secret-change-me",
                 "iarh-minio-secret-change-me",
             }
-            secrets = {
-                "JWT_SECRET_KEY": self.jwt_secret_key,
-                "LIVEKIT_API_SECRET": self.livekit_api_secret,
-                "MEDIA_S3_SECRET_KEY": self.media_s3_secret_key,
-            }
+            secrets = {"JWT_SECRET_KEY": self.jwt_secret_key}
+            if self.media_enabled:
+                secrets.update({
+                    "LIVEKIT_API_SECRET": self.livekit_api_secret,
+                    "MEDIA_S3_SECRET_KEY": self.media_s3_secret_key,
+                })
             invalid = [name for name, value in secrets.items() if not value or value in forbidden]
             if invalid:
                 raise ValueError(f"Production secrets are missing or use development defaults: {', '.join(invalid)}")
-            if self.livekit_public_url.startswith("ws://"):
+            if self.media_enabled and self.livekit_public_url.startswith("ws://"):
                 raise ValueError("LIVEKIT_PUBLIC_URL must use wss:// in production")
-            if self.media_s3_public_endpoint is None:
+            if self.media_enabled and self.media_s3_public_endpoint is None:
                 raise ValueError("MEDIA_S3_PUBLIC_ENDPOINT is required in production")
-            if not self.media_s3_public_endpoint.startswith("https://"):
+            if self.media_enabled and not self.media_s3_public_endpoint.startswith("https://"):
                 raise ValueError("MEDIA_S3_PUBLIC_ENDPOINT must use https:// in production")
             if "*" in self.cors_origins:
                 raise ValueError("CORS_ORIGINS must not contain '*' in production")
