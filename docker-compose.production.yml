@@ -1,0 +1,105 @@
+services:
+  migrate:
+    build:
+      context: ./backend
+    environment:
+      APP_ENV: production
+      DATABASE_URL: postgresql+asyncpg://iarh:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}@postgres:5432/iarh
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: ["alembic", "upgrade", "head"]
+    restart: "no"
+
+  postgres:
+    ports: []
+
+  minio:
+    ports: []
+
+  livekit:
+    environment:
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:?LIVEKIT_API_KEY is required}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:?LIVEKIT_API_SECRET is required}
+    volumes: []
+    ports: []
+    command:
+      - /bin/sh
+      - -c
+      - |
+        cat > /tmp/livekit.yaml <<EOF
+        port: 7880
+        bind_addresses:
+          - 0.0.0.0
+        rtc:
+          tcp_port: 7881
+          port_range_start: 50000
+          port_range_end: 50100
+        keys:
+          $${LIVEKIT_API_KEY}: $${LIVEKIT_API_SECRET}
+        redis:
+          address: redis:6379
+        logging:
+          level: info
+        webhook:
+          api_key: $${LIVEKIT_API_KEY}
+          urls:
+            - http://backend:8000/api/v1/media/livekit/webhook
+        EOF
+        exec /livekit-server --config /tmp/livekit.yaml
+
+  livekit_egress:
+    volumes: []
+    environment:
+      EGRESS_CONFIG_FILE: ""
+      EGRESS_CONFIG_BODY: |
+        api_key: ${LIVEKIT_API_KEY:?LIVEKIT_API_KEY is required}
+        api_secret: ${LIVEKIT_API_SECRET:?LIVEKIT_API_SECRET is required}
+        ws_url: ws://livekit:7880
+        redis:
+          address: redis:6379
+          db: 0
+        storage:
+          s3:
+            access_key: ${MINIO_ROOT_USER:?MINIO_ROOT_USER is required}
+            secret: ${MINIO_ROOT_PASSWORD:?MINIO_ROOT_PASSWORD is required}
+            region: us-east-1
+            endpoint: http://minio:9000
+            bucket: iarh-media
+            force_path_style: true
+        session_limits:
+          file_output_max_duration: 1h
+
+  backend:
+    environment:
+      APP_ENV: production
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:?LIVEKIT_API_SECRET is required}
+      MEDIA_S3_PUBLIC_ENDPOINT: ${MEDIA_S3_PUBLIC_ENDPOINT:?MEDIA_S3_PUBLIC_ENDPOINT is required}
+      CORS_ORIGINS: ${CORS_ORIGINS:?CORS_ORIGINS is required}
+      AI_CREDENTIAL_ENCRYPTION_KEY: ${AI_CREDENTIAL_ENCRYPTION_KEY:?AI_CREDENTIAL_ENCRYPTION_KEY is required}
+      LIVEKIT_PUBLIC_URL: ${LIVEKIT_PUBLIC_URL:?LIVEKIT_PUBLIC_URL is required}
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:?LIVEKIT_API_KEY is required}
+    restart: unless-stopped
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+    ports: []
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  celery_worker:
+    environment:
+      APP_ENV: production
+      LIVEKIT_API_KEY: ${LIVEKIT_API_KEY:?LIVEKIT_API_KEY is required}
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY:?JWT_SECRET_KEY is required}
+      LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET:?LIVEKIT_API_SECRET is required}
+      MEDIA_S3_PUBLIC_ENDPOINT: ${MEDIA_S3_PUBLIC_ENDPOINT:?MEDIA_S3_PUBLIC_ENDPOINT is required}
+      AI_CREDENTIAL_ENCRYPTION_KEY: ${AI_CREDENTIAL_ENCRYPTION_KEY:?AI_CREDENTIAL_ENCRYPTION_KEY is required}
+    restart: unless-stopped
+
+  frontend:
+    build:
+      args:
+        API_BASE_URL: ${FRONTEND_API_BASE_URL:?FRONTEND_API_BASE_URL is required}
+    restart: unless-stopped

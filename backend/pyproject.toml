@@ -1,0 +1,42 @@
+[project]
+name = "iarh-backend"
+version = "0.1.0"
+description = "IARH backend - API de simulation d'entretiens IA"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi[standard]>=0.139.2,<0.140",
+  "pydantic>=2.0,<3.0",
+  "pydantic-settings>=2.0,<3.0",
+  "sqlalchemy[asyncio]>=2.0.51,<2.1",
+  "asyncpg>=0.30,<1.0",
+  "psycopg[binary]>=3.2,<4.0",
+  "alembic>=1.18.5,<2.0",
+  "python-multipart>=0.0.20,<1.0",
+  "celery[redis]>=5.6,<5.7",
+  "google-genai==2.13.0",
+  "livekit-api==1.2.0",
+  "boto3==1.43.54",
+  "faster-whisper==1.2.1",
+  "PyJWT==2.13.0",
+  "argon2-cffi==25.1.0",
+  "cryptography>=44.0,<47.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.0,<9.0",
+  "pytest-asyncio>=1.0,<2.0",
+  "httpx>=0.28,<1.0",
+  "ruff>=0.12,<1.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["migrations*"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"

@@ -1,0 +1,45 @@
+name: Build and deploy Flutter Web to Firebase Hosting
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      API_BASE_URL: ${{ vars.API_BASE_URL }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate deployment variable
+        run: |
+          if [ -z "$API_BASE_URL" ]; then
+            echo "Repository variable API_BASE_URL is required"
+            exit 1
+          fi
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Build Flutter Web
+        working-directory: frontend
+        run: |
+          flutter pub get
+          flutter build web --release --dart-define=API_BASE_URL="$API_BASE_URL"
+
+      - name: Deploy Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SIMUIA }}
+          projectId: simuia
+          channelId: live

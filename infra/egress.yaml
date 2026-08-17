@@ -1,0 +1,16 @@
+api_key: iarh-dev
+api_secret: iarh-livekit-dev-secret-change-me
+ws_url: ws://livekit:7880
+redis:
+  address: redis:6379
+  db: 0
+storage:
+  s3:
+    access_key: iarh
+    secret: iarh-minio-secret-change-me
+    region: us-east-1
+    endpoint: http://minio:9000
+    bucket: iarh-media
+    force_path_style: true
+session_limits:
+  file_output_max_duration: 1h

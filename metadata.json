@@ -1,0 +1,6 @@
+{
+  "name": "SimuEmploi AI - Entretiens & Coaching",
+  "description": "Plateforme complète de simulation d'entretiens d'embauche avec recruteur IA, analyse en temps réel de la voix et du langage corporel, feedback STAR détaillé et suivi des progrès.",
+  "requestFramePermissions": ["camera", "microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

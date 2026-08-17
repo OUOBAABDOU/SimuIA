@@ -1,0 +1,17 @@
+node_modules/
+build/
+dist/
+coverage/
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+.DS_Store
+*.log
+firebase-debug.log
+.env*
+!.env.example

@@ -1,0 +1,18 @@
+port: 7880
+bind_addresses:
+  - 0.0.0.0
+rtc:
+  tcp_port: 7881
+  port_range_start: 50000
+  port_range_end: 50100
+keys:
+  iarh-dev: iarh-livekit-dev-secret-change-me
+redis:
+  address: redis:6379
+logging:
+  level: info
+
+webhook:
+  api_key: iarh-dev
+  urls:
+    - http://backend:8000/api/v1/media/livekit/webhook
