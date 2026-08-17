@@ -1,0 +1,65 @@
+services:
+  - type: web
+    name: iarh-backend
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: BACKGROUND_JOBS_ENABLED
+        value: "false"
+      - key: RATE_LIMIT_ENABLED
+        value: "true"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: iarh-postgres
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: iarh-redis
+          property: connectionString
+      - key: CORS_ORIGINS
+        sync: false
+      - key: PUBLIC_APP_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: AI_CREDENTIAL_ENCRYPTION_KEY
+        sync: false
+      - key: JWT_SECRET_KEY
+        sync: false
+      - key: LIVEKIT_API_KEY
+        sync: false
+      - key: LIVEKIT_API_SECRET
+        sync: false
+      - key: LIVEKIT_PUBLIC_URL
+        sync: false
+      - key: MEDIA_S3_ENDPOINT
+        sync: false
+      - key: MEDIA_S3_PUBLIC_ENDPOINT
+        sync: false
+      - key: MEDIA_S3_ACCESS_KEY
+        sync: false
+      - key: MEDIA_S3_SECRET_KEY
+        sync: false
+      - key: MEDIA_S3_BUCKET
+        value: iarh-media
+      - key: VERTEX_AI_ENABLED
+        value: "false"
+
+  - type: keyvalue
+    name: iarh-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: []
+
+databases:
+  - name: iarh-postgres
+    plan: free
+    region: frankfurt
+    postgresMajorVersion: "17"

@@ -43,6 +43,7 @@ class Settings(BaseSettings):
     access_token_ttl_seconds: int = 900
     refresh_token_ttl_seconds: int = 2592000
     interview_duration_minutes: int = 30
+    background_jobs_enabled: bool = True
     rate_limit_enabled: bool = True
     email_verification_required: bool = False
     email_delivery_mode: str = "disabled"
@@ -57,6 +58,10 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def validate_runtime_secrets(self) -> "Settings":
+        if self.database_url.startswith("postgresql://"):
+            self.database_url = "postgresql+asyncpg://" + self.database_url[len("postgresql://"):]
+        elif self.database_url.startswith("postgres://"):
+            self.database_url = "postgresql+asyncpg://" + self.database_url[len("postgres://"):]
         if self.payment_provider != "disabled":
             raise ValueError("PAYMENT_PROVIDER is disabled until a verified provider adapter is installed")
         if len(self.payment_currency) != 3 or not self.payment_currency.isalpha():

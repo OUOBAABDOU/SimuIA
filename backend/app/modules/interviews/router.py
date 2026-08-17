@@ -63,9 +63,21 @@ async def finish(interview_id: UUID, db: AsyncSession=Depends(get_db), user: Use
     await db.commit()
     await db.refresh(i)
     if should_evaluate:
-        async with AsyncSessionLocal() as job_db:
-            await enqueue_evaluate_interview(job_db, i.id)
-            await job_db.commit()
+        if get_settings().background_jobs_enabled:
+            async with AsyncSessionLocal() as job_db:
+                await enqueue_evaluate_interview(job_db, i.id)
+                await job_db.commit()
+        else:
+            from app.ai.service import generate_report
+
+            try:
+                await generate_report(db, i.id)
+                i.status = InterviewStatus.COMPLETED
+                await db.commit()
+            except Exception:
+                i.status = InterviewStatus.FAILED
+                await db.commit()
+                raise
     return i
 
 @router.post("/{interview_id}/join", response_model=JoinRead)

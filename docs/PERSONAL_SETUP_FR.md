@@ -93,3 +93,19 @@ Dans GitHub, ajouter :
 Le workflow construit Flutter Web puis déploie `frontend/build/web` sur le
 projet Firebase `simuia` à chaque push sur `main`. Ne jamais committer le JSON
 du compte de service.
+
+## 8. Déployer gratuitement le backend sur Render
+
+Le fichier `render.yaml` prépare un service web Docker, PostgreSQL et Render
+Key Value. Dans Render, choisissez **New > Blueprint**, connectez le dépôt
+`OUOBAABDOU/SimuIA` et sélectionnez `main`.
+
+Le Blueprint demande les variables `sync: false`. Renseignez au minimum les
+secrets JWT, Gemini, chiffrement et les URLs CORS/stockage. Le Blueprint utilise
+`BACKGROUND_JOBS_ENABLED=false` : l'évaluation Gemini texte est exécutée dans
+la requête de fin d'entretien, car les workers Celery gratuits ne sont pas
+disponibles. N'utilisez pas le parcours LiveKit/audio dans cette démonstration
+Render sans un worker et un stockage média réellement configurés.
+
+Après déploiement, copiez l'URL `https://iarh-backend.onrender.com` dans la
+variable GitHub `API_BASE_URL`, puis relancez le workflow Firebase.
