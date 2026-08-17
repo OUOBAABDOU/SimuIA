@@ -2,9 +2,7 @@ name: Build and deploy Flutter Web to Firebase Hosting
 
 on:
   push:
-    branches:
-      - main
-      - agent/iarh-firebase-submission
+    branches: [main]
   workflow_dispatch:
 
 permissions:
