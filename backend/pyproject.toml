@@ -17,9 +17,9 @@ dependencies = [
   "livekit-api==1.2.0",
   "boto3==1.43.54",
   "faster-whisper==1.2.1",
-  "PyJWT==2.13.0",
+  "PyJWT==2.15.0",
   "argon2-cffi==25.1.0",
-  "cryptography>=44.0,<47.0",
+  "cryptography>=44.0,<51.0",
 ]
 
 [dependency-groups]
